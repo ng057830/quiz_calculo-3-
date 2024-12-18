@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quiz Conceptual de Operaciones con Números Reales</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <!-- Cargar MathJax v3 -->
+  <script>
+    window.MathJax = {
+      tex: {
+        inlineMath: [['\\(', '\\)']],
+        displayMath: [['\\[', '\\]']]
+      },
+      svg: {
+        fontCache: 'global'
+      }
+    };
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+  <style>
+    :root {
+      --primary-color: #2563eb;
+      --secondary-color: #10b981;
+      --background-color: #f8fafc;
+      --text-color: #1e293b;
+      --border-color: #e2e8f0;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Roboto', sans-serif;
+    }
+
+    body {
+      background-color: var(--background-color);
+      color: var(--text-color);
+      line-height: 1.6;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 2rem;
+    }
+
+    .screen {
+      display: none;
+      background: white;
+      border-radius: 1rem;
+      padding: 2rem;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .screen.active {
+      display: block;
+    }
+
+    h1 {
+      color: var(--primary-color);
+      font-size: 2rem;
+      margin-bottom: 1rem;
+      text-align: center;
+    }
+
+    h2 {
+      color: var(--secondary-color);
+      font-size: 1.5rem;
+      margin-bottom: 1rem;
+    }
+
+    .btn {
+      background-color: var(--primary-color);
+      color: white;
+      border: none;
+      padding: 0.75rem 1.5rem;
+      border-radius: 0.5rem;
+      cursor: pointer;
+      font-size: 1rem;
+      transition: background-color 0.3s;
+    }
+
+    .btn:hover {
+      background-color: #1d4ed8;
+    }
+
+    .options {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 1rem;
+      margin: 1.5rem 0;
+    }
+
+    .option {
+      padding: 1rem;
+      border: 2px solid var(--border-color);
+      border-radius: 0.5rem;
+      cursor: pointer;
+      transition: all 0.3s;
+      text-align: center;
+    }
+
+    .option:hover {
+      border-color: var(--secondary-color);
+      background-color: #f0f9ff;
+    }
+
+    .option.selected {
+      border-color: var(--primary-color);
+      background-color: #e0f2fe;
+    }
+
+    .hint-container {
+      margin-top: 1rem;
+      padding: 1rem;
+      background-color: #f0fdf4;
+      border-radius: 0.5rem;
+      border: 1px solid var(--secondary-color);
+      display: none;
+    }
+
+    .progress-bar {
+      width: 100%;
+      height: 0.5rem;
+      background-color: var(--border-color);
+      border-radius: 0.25rem;
+      margin: 1rem 0;
+      overflow: hidden;
+    }
+
+    .progress {
+      height: 100%;
+      background-color: var(--primary-color);
+      border-radius: 0.25rem;
+      transition: width 0.3s ease-in-out;
+      width: 0%;
+    }
+
+    #hintBtn {
+      background-color: var(--secondary-color);
+      margin-top: 1rem;
+    }
+
+    #hintBtn:hover {
+      background-color: #047857;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <div id="startScreen" class="screen active">
+      <h1>Operaciones con Números Reales: Radicación, Logaritmos, Exponenciales y Polinomios</h1>
+      <h2>Preguntas de opción múltiple • Conceptos fundamentales</h2>
+      <p>Este quiz se enfoca en verificar la comprensión conceptual de las operaciones con números reales, incluyendo radicación, logaritmos, funciones exponenciales y polinomios.</p>
+      <button class="btn" onclick="startQuiz()">Comenzar Quiz</button>
+    </div>
+
+    <div id="quizScreen" class="screen">
+      <div class="progress-bar">
+        <div id="progress" class="progress"></div>
+      </div>
+      <h2 id="questionText"></h2>
+      <div id="options" class="options"></div>
+      <button id="hintBtn" class="btn" onclick="showHint()">Mostrar Pista</button>
+      <div id="hintContainer" class="hint-container"></div>
+    </div>
+
+    <div id="resultsScreen" class="screen">
+      <h1>Resultados del Quiz</h1>
+      <h2 id="score"></h2>
+      <p id="feedback"></p>
+      <button class="btn" onclick="restartQuiz()">Intentar de Nuevo</button>
+    </div>
+  </div>
+
+  <script>
+    const questions = [
+      {
+        question: "¿Cuál es la simplificación de \\( \\sqrt{50} \\)?",
+        options: [
+          "\\( 5\\sqrt{2} \\)",
+          "\\( 10\\sqrt{5} \\)",
+          "\\( 2\\sqrt{25} \\)",
+          "\\( \\sqrt{25} \\cdot \\sqrt{2} \\)"
+        ],
+        correct: 0,
+        hints: [
+          "Descompón el número bajo la raíz en factores primos.",
+          "Busca cuadrados perfectos dentro de 50."
+        ]
+      },
+      {
+        question: "¿Qué representa el logaritmo \\( \\log_b(a) \\)?",
+        options: [
+          "La potencia a la que hay que elevar \\( b \\) para obtener \\( a \\).",
+          "El número de veces que \\( a \\) contiene a \\( b \\).",
+          "La raíz \\( b \\) de \\( a \\).",
+          "La suma de \\( a \\) y \\( b \\)."
+        ],
+        correct: 0,
+        hints: [
+          "Recuerda la definición básica de logaritmo.",
+          "Piensa en términos de exponentes."
+        ]
+      },
+      {
+        question: "¿Cuál es la propiedad del logaritmo que corresponde a \\( \\log_b(xy) \\)?",
+        options: [
+          "\\( \\log_b(x) + \\log_b(y) \\)",
+          "\\( \\log_b(x) - \\log_b(y) \\)",
+          "\\( \\log_b\\left(\\frac{x}{y}\\right) \\)",
+          "\\( \\log_b(x^y) \\)"
+        ],
+        correct: 0,
+        hints: [
+          "Piensa en cómo el logaritmo de un producto se relaciona con la suma.",
+          "Relaciona con la propiedad de exponentes."
+        ]
+      },
+      {
+        question: "¿Cuál es la base del logaritmo natural?",
+        options: [
+          "\\( 10 \\)",
+          "\\( e \\)",
+          "\\( 2 \\)",
+          "\\( \\pi \\)"
+        ],
+        correct: 1,
+        hints: [
+          "Es una constante irracional aproximadamente igual a 2.718.",
+          "Frecuentemente usada en cálculo y crecimiento exponencial."
+        ]
+      },
+      {
+        question: "¿Cuál es la expresión equivalente a \\( e^{\\ln(x)} \\)?",
+        options: [
+          "\\( x \\)",
+          "\\( \\ln(e^x) \\)",
+          "\\( \\frac{1}{x} \\)",
+          "\\( \\ln(x) \\)"
+        ],
+        correct: 0,
+        hints: [
+          "Usa las propiedades de funciones exponenciales y logarítmicas.",
+          "Considera la relación inversa entre \\( e^x \\) y \\( \\ln(x) \\)."
+        ]
+      },
+      {
+        question: "¿Cuál es la derivada de la función exponencial \\( f(x) = e^x \\)?",
+        options: [
+          "\\( e^x \\)",
+          "\\( x e^{x-1} \\)",
+          "\\( e^{x} + C \\)",
+          "\\( 0 \\)"
+        ],
+        correct: 0,
+        hints: [
+          "La función exponencial tiene una propiedad única en cálculo.",
+          "Piensa en cómo se comporta al derivarse."
+        ]
+      },
+      {
+        question: "¿Qué indica que una función exponencial sea creciente?",
+        options: [
+          "Su exponente es negativo.",
+          "Su base es mayor que 1.",
+          "Su base es igual a 1.",
+          "Su exponente es igual a 0."
+        ],
+        correct: 1,
+        hints: [
+          "Piensa en el impacto de la base en el crecimiento de la función.",
+          "Relación entre la base y el comportamiento de la función."
+        ]
+      },
+      {
+        question: "¿Cuál es el grado del polinomio \\( P(x) = 4x^5 - 3x^3 + 2x - 7 \\)?",
+        options: [
+          "3",
+          "4",
+          "5",
+          "7"
+        ],
+        correct: 2,
+        hints: [
+          "El grado de un polinomio es el mayor exponente de sus términos.",
+          "Observa los exponentes de cada término."
+        ]
+      },
+      {
+        question: "¿Cuál de los siguientes es un polinomio?",
+        options: [
+          "\\( f(x) = \\frac{1}{x} + 3 \\)",
+          "\\( f(x) = 2x^3 - x + 5 \\)",
+          "\\( f(x) = \\sqrt{x} + 2 \\)",
+          "\\( f(x) = e^x - 1 \\)"
+        ],
+        correct: 1,
+        hints: [
+          "Un polinomio solo puede tener exponentes enteros no negativos.",
+          "Verifica la forma de cada función."
+        ]
+      },
+      {
+        question: "¿Cuál es la raíz del polinomio \\( P(x) = x^2 - 5x + 6 \\)?",
+        options: [
+          "\\( x = 2 \\) y \\( x = 3 \\)",
+          "\\( x = -2 \\) y \\( x = -3 \\)",
+          "\\( x = 1 \\) y \\( x = 6 \\)",
+          "\\( x = 0 \\)"
+        ],
+        correct: 0,
+        hints: [
+          "Factoriza el polinomio para encontrar las soluciones.",
+          "Busca dos números que multiplicados den 6 y sumados den -5."
+        ]
+      },
+      {
+        question: "¿Qué establece el Teorema Fundamental del Álgebra?",
+        options: [
+          "Todo polinomio tiene al menos una derivada.",
+          "Todo polinomio de grado n tiene exactamente n raíces en el conjunto de los números complejos.",
+          "Todo polinomio puede ser factorizado en términos lineales.",
+          "Todo polinomio tiene un máximo y un mínimo."
+        ],
+        correct: 1,
+        hints: [
+          "Relaciona con el número de soluciones de una ecuación polinómica.",
+          "Considera el conjunto de números complejos."
+        ]
+      }
+    ];
+
+    // Función para barajar opciones de respuesta
+    function shuffleOptions(question) {
+      for (let i = question.options.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [question.options[i], question.options[j]] = [question.options[j], question.options[i]];
+        if (question.correct === i) {
+          question.correct = j;
+        } else if (question.correct === j) {
+          question.correct = i;
+        }
+      }
+    }
+
+    // Barajar las opciones de todas las preguntas
+    questions.forEach(shuffleOptions);
+
+    let currentQuestion = 0;
+    let score = 0;
+    let selectedOption = null;
+    let currentHint = 0;
+
+    // Función para iniciar el quiz
+    function startQuiz() {
+      document.getElementById('startScreen').classList.remove('active');
+      document.getElementById('quizScreen').classList.add('active');
+      showQuestion();
+    }
+
+    // Función para mostrar una pregunta
+    async function showQuestion() {
+      const question = questions[currentQuestion];
+      document.getElementById('questionText').innerHTML = question.question;
+      document.getElementById('progress').style.width = `${((currentQuestion) / questions.length) * 100}%`;
+
+      const optionsContainer = document.getElementById('options');
+      optionsContainer.innerHTML = '';
+
+      question.options.forEach((option, index) => {
+        const optionDiv = document.createElement('div');
+        optionDiv.className = 'option';
+        optionDiv.innerHTML = option;
+        optionDiv.onclick = () => {
+          selectOption(index);
+          nextQuestion();
+        };
+        optionsContainer.appendChild(optionDiv);
+      });
+
+      // Renderizar las expresiones matemáticas
+      await MathJax.typesetPromise();
+
+      document.getElementById('hintContainer').style.display = 'none';
+      currentHint = 0;
+      selectedOption = null;
+    }
+
+    // Función para seleccionar una opción
+    function selectOption(index) {
+      const options = document.querySelectorAll('.option');
+      options.forEach(option => option.classList.remove('selected'));
+      options[index].classList.add('selected');
+      selectedOption = index;
+    }
+
+    // Función para mostrar una pista
+    async function showHint() {
+      const question = questions[currentQuestion];
+      if (currentHint < question.hints.length) {
+        const hintContainer = document.getElementById('hintContainer');
+        hintContainer.style.display = 'block';
+        hintContainer.innerHTML = question.hints[currentHint];
+        currentHint++;
+        // Renderizar las pistas después de mostrarlas
+        await MathJax.typesetPromise([hintContainer]);
+      }
+    }
+
+    // Función para avanzar a la siguiente pregunta
+    function nextQuestion() {
+      if (selectedOption !== null) {
+        if (selectedOption === questions[currentQuestion].correct) {
+          score++;
+        }
+
+        currentQuestion++;
+
+        if (currentQuestion < questions.length) {
+          showQuestion();
+        } else {
+          showResults();
+        }
+      } else {
+        alert('Por favor selecciona una opción');
+      }
+    }
+
+    // Función para mostrar los resultados
+    function showResults() {
+      document.getElementById('quizScreen').classList.remove('active');
+      document.getElementById('resultsScreen').classList.add('active');
+
+      const scoreElement = document.getElementById('score');
+      const feedbackElement = document.getElementById('feedback');
+
+      scoreElement.textContent = `Puntuación: ${score} de ${questions.length}`;
+
+      if (score >= questions.length * 0.8) {
+        feedbackElement.textContent = "¡Excelente! Tienes una comprensión sólida de las operaciones con números reales, incluyendo radicación, logaritmos, exponenciales y polinomios.";
+      } else if (score >= questions.length * 0.6) {
+        feedbackElement.textContent = "Buen trabajo, aunque algunos conceptos podrían revisarse para mayor comprensión.";
+      } else {
+        feedbackElement.textContent = "Parece que algunos conceptos necesitan refuerzo. Revisar estos temas te ayudará a fortalecer tu comprensión.";
+      }
+    }
+
+    // Función para reiniciar el quiz
+    function restartQuiz() {
+      currentQuestion = 0;
+      score = 0;
+      selectedOption = null;
+      document.getElementById('resultsScreen').classList.remove('active');
+      document.getElementById('startScreen').classList.add('active');
+      questions.forEach(shuffleOptions);
+    }
+  </script>
+</body>
+
+</html>
